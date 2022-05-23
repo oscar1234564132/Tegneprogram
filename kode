@@ -1,0 +1,291 @@
+# importing libraries
+from PyQt5.QtWidgets import *
+from PyQt5.QtGui import *
+from PyQt5.QtCore import *
+import sys
+
+# window class
+class Window(QMainWindow):
+	def __init__(self):
+		super().__init__()
+
+		# setting title
+		self.setWindowTitle("Tegneprogramm")
+
+		# setting geometry to main window
+		self.setGeometry(100, 100, 800, 600)
+		self.image = QImage(self.size(), QImage.Format_RGB32)
+        
+		self.image.fill(Qt.white)
+		self.setStyleSheet("border : 3px solid blue;")
+	#	self.setCentralWidget(self.centralWidget)
+		self.drawing = False
+		self.brushSize = 2
+		self.brushColor = Qt.black
+		self.lastPoint = QPoint()
+		menuBar = self.menuBar()
+
+		# creating file menu for save and clear action
+		fileMenu = menuBar.addMenu("Filer")
+		ImporterTegning = fileMenu.addMenu("Importer tegning")
+		LagreTegning = fileMenu.addMenu("Lagre tegning")
+		NyTegning = fileMenu.addMenu("Ny tegning")
+        
+        #importer tegning
+		Importer = QAction("Importer", self)
+		#Importer.setShortcut("Ctrl + O)
+		ImporterTegning.addAction(Importer)
+		Importer.triggered.connect(self.upload)
+        
+        #Lager lagringskommando (variabel)
+		Lagre = QAction("Lagre", self)
+		#Hurtigknapp for lagring
+		Lagre.setShortcut("Ctrl + S")
+		#Legger lagring til i fil-menyen
+		LagreTegning.addAction(Lagre)
+		#Legger lagring-kommandoen til å faktisk lagre
+		Lagre.triggered.connect(self.save)
+        # creating clear action
+		NyttArk = QAction("Nytt ark", self)
+		# adding short cut to the clear action
+		NyttArk.setShortcut("Ctrl + C")
+		# adding clear to the file menu
+		NyTegning.addAction(NyttArk)
+		# adding action to the clear
+		NyttArk.triggered.connect(self.clear)
+        
+        
+        #Der man kan gjøre visuelle endringer
+		edit1Menu = menuBar.addMenu("Pensel")
+		edit2Menu = menuBar.addMenu("Lerret og vindu")
+        
+		b_size = edit1Menu.addMenu("Brush Size")
+        #Penselbredde
+		#creating action for selecting pixel of 4px
+		pix_4 = QAction("4 piksler", self)
+		# adding this action to the brush size
+		b_size.addAction(pix_4)
+		# adding method to this
+		pix_4.triggered.connect(self.Pixel_4)
+
+		# similarly repeating above steps for different sizes
+		pix_7 = QAction("7 piksler", self)
+		b_size.addAction(pix_7)
+		pix_7.triggered.connect(self.Pixel_7)
+
+		pix_9 = QAction("9 piksler", self)
+		b_size.addAction(pix_9)
+		pix_9.triggered.connect(self.Pixel_9)
+
+		pix_12 = QAction("12 piksler", self)
+		b_size.addAction(pix_12)
+		pix_12.triggered.connect(self.Pixel_12)
+        
+		pix_15 = QAction("15 piksler", self)
+		b_size.addAction(pix_15)
+		pix_15.triggered.connect(self.Pixel_15)
+        
+		pix_20 = QAction("20 piksler", self)
+		b_size.addAction(pix_20)
+		pix_20.triggered.connect(self.Pixel_20)
+        
+		pix_28 = QAction("28 piksler", self)
+		b_size.addAction(pix_28)
+		pix_28.triggered.connect(self.Pixel_28)
+        
+		b_fill = QAction("Bøtte", self)
+		b_size.addAction(b_fill)
+		b_fill.triggered.connect(self.floodFill)
+        
+		b_color = edit1Menu.addMenu("Brush Color")
+        # creating options for brush color
+		# creating action for black color
+		black = QAction("Svart", self)
+		# adding this action to the brush colors
+		b_color.addAction(black)
+		# adding methods to the black
+		black.triggered.connect(self.blackColor)
+		white = QAction("Hvit", self)
+		b_color.addAction(white)
+		white.triggered.connect(self.whiteColor)
+		green = QAction("Grønn", self)
+		b_color.addAction(green)
+		green.triggered.connect(self.greenColor)
+		yellow = QAction("Gul", self)
+		b_color.addAction(yellow)
+		yellow.triggered.connect(self.yellowColor)
+		red = QAction("Rød", self)
+		b_color.addAction(red)
+		red.triggered.connect(self.redColor)
+		blue = QAction("Blå", self)
+		b_color.addAction(blue)
+		blue.triggered.connect(self.blueColor)
+        
+        #En hjelpe-meny
+		hjelpMenu = menuBar.addMenu("Hjelp")
+		Kundeservice = hjelpMenu.addMenu("Kundeservice")
+		Om = hjelpMenu.addMenu("Om programmet")
+        
+        
+        #Nettsiden til programmet
+		webMenu = menuBar.addMenu("Nettside -Galleri og mer")
+        
+
+
+	# method for checking mouse cicks
+	def mousePressEvent(self, event):
+
+		# if left mouse button is pressed
+		if event.button() == Qt.LeftButton:
+			# make drawing flag true
+			self.drawing = True
+			# make last point to the point of cursor
+			self.lastPoint = event.pos()
+
+	# method for tracking mouse activity
+	def mouseMoveEvent(self, event):
+		
+		# checking if left button is pressed and drawing flag is true
+		if (event.buttons() & Qt.LeftButton) & self.drawing:
+			
+			# creating painter object
+			painter = QPainter(self.image)
+			
+			# set the pen of the painter
+			painter.setPen(QPen(self.brushColor, self.brushSize,
+							Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
+			
+			# draw line from the last point of cursor to the current point
+			# this will draw only one step
+			painter.drawLine(self.lastPoint, event.pos())
+			
+			# change the last point
+			self.lastPoint = event.pos()
+			# update
+			self.update()
+
+	# method for mouse left button release
+	def mouseReleaseEvent(self, event):
+
+		if event.button() == Qt.LeftButton:
+			# make drawing flag false
+			self.drawing = False
+
+	# paint event
+	def paintEvent(self, event):
+		# create a canvas
+		canvasPainter = QPainter(self)
+		
+		# draw rectangle on the canvas
+		canvasPainter.drawImage(self.rect(), self.image, self.image.rect())
+
+	# method for saving canvas
+	def save(self):
+		filePath, _ = QFileDialog.getSaveFileName(self, "Save Image", "",
+						"PNG(*.png);;JPEG(*.jpg *.jpeg);;All Files(*.*) ")
+
+		if filePath == "":
+			return
+		self.image.save(filePath)
+        
+	def upload(self):
+		openfile, _ =QFileDialog.getOpenFileName(self, "Open Image", "",
+                        "PNG(*.png);;JPEG(*.jpg *.jpeg);;All Files(*.*) ")
+        
+		if openfile =="":
+			return
+		self.image.load(openfile)
+        
+
+	# method for clearing every thing on canvas
+	def clear(self):
+		# make the whole canvas white
+		self.image.fill(Qt.white)
+		# update
+		self.update()
+
+	# methods for changing pixel sizes
+	def Pixel_4(self):
+		self.brushSize = 4
+
+	def Pixel_7(self):
+		self.brushSize = 7
+
+	def Pixel_9(self):
+		self.brushSize = 9
+
+	def Pixel_12(self):
+		self.brushSize = 12
+        
+	def Pixel_15(self):
+		self.brushSize = 15
+        
+	def Pixel_20(self):
+		self.brushSize = 20
+
+	def Pixel_28(self):
+		self.brushSize = 28
+        
+	# methods for changing brush color
+	def blackColor(self):
+		self.brushColor = Qt.black
+
+	def whiteColor(self):
+		self.brushColor = Qt.white
+
+	def greenColor(self):
+		self.brushColor = Qt.green
+
+	def yellowColor(self):
+		self.brushColor = Qt.yellow
+
+	def redColor(self):
+		self.brushColor = Qt.red
+
+	def blueColor(self):
+		self.brushColor = Qt.blue
+        
+
+	def getPixel(x,y,pixels,w):
+		i = (x + (y * w)) * 4
+		return pixels[i:i + 3]
+
+	#Paint bucket
+	def floodFill(image,pos):
+		fillPositions = []
+		w, h = image.width(), image.height()
+		pixels = image.bits().asstring(w * h * 4)
+		targetColor = getPixel(pos.x(), pos.y(), pixels, w)
+
+		haveSeen = set()
+		queue = [(pos.x(), pos.y())]
+		while queue:
+			x, y = queue.pop()
+			if getPixel(x, y,pixels,w) == targetColor:
+				fillPositions.append((x,y))
+				queue.extend(getCardinalPoints(haveSeen, (x, y),w,h))
+		return fillPositions
+
+
+	def getCardinalPoints(haveSeen, centerPos,w,h):
+		points = []
+		cx, cy = centerPos
+		for x, y in [(1, 0), (0, 1), (-1, 0), (0, -1)]:
+			xx, yy = cx + x, cy + y
+			if (xx >= 0 and xx < w and yy >= 0 and yy < h and (xx, yy) not in haveSeen):
+				points.append((xx, yy))
+				haveSeen.add((xx, yy))
+			return points
+
+
+# create pyqt5 app
+App = QApplication(sys.argv)
+
+# create the instance of our Window
+window = Window()
+
+# showing the window
+window.show()
+
+# start the app
+sys.exit(App.exec())
